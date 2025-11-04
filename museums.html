@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- GoogleFonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Decol&family=Kaisei+Opti&family=Lora:ital,wght@0,400..700;1,400..700&family=Moirai+One&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- reset -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <title>わたしの博物館 - 一覧</title>
+    <link rel="stylesheet" href="./css/museums.css" />
+  </head>
+  <body>
+    <div class="museums__top">
+      <a href="./index.html" class="museums__btn"
+        ><img src="./image/item/btn_back.png" alt="前のページに戻る"
+      /></a>
+      <h1 class="museums__heading">博物館一覧</h1>
+    </div>
+
+    <div class="museums__inner">
+      <div class="search">
+        <input type="text" id="search-input" placeholder="キーワード検索" />
+        <button id="search-btn">検索</button>
+      </div>
+
+      <div class="select">
+        <div class="category-container">
+          <button id="toggle-category" aria-expanded="false">カテゴリ</button>
+          <div id="category-list" style="display: none">
+            <button data-category="歴史">歴史</button>
+            <button data-category="自然">自然</button>
+            <button data-category="科学">科学</button>
+            <button data-category="芸術">芸術</button>
+            <button data-category="文化">文化</button>
+            <button data-category="食べ物">食べ物</button>
+            <button data-category="音楽">音楽</button>
+            <button data-category="スポーツ">スポーツ</button>
+            <button data-category="動物">動物</button>
+            <button data-category="レトロ">レトロ</button>
+            <button data-category="アニメ">アニメ</button>
+            <button data-category="乗り物">乗り物</button>
+          </div>
+        </div>
+        <select id="sort-select">
+          <option value="newest" selected>新しい順</option>
+          <option value="oldest">古い順</option>
+          <option value="titleAsc">あいうえお順</option>
+        </select>
+      </div>
+
+      <!-- 所在地検索 -->
+      <div class="area-search">
+        <div class="pref">
+          <label for="pref-select">都道府県:</label>
+          <select id="pref-select">
+            <option value="">選択してください</option>
+            <option value="東京都">東京都</option>
+            <option value="大阪府">大阪府</option>
+            <option value="愛知県">愛知県</option>
+            <option value="北海道">北海道</option>
+            <option value="福岡県">福岡県</option>
+          </select>
+        </div>
+
+        <div class="city">
+          <label for="city-select">市:</label>
+          <select id="city-select" disabled>
+            <option value="">先に都道府県を選択してください</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="museum-list">読み込み中...</div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyA8WauCKutQwzK2kkBPprzwWoy7p9cAXVE",
+        authDomain: "akiya-app-e7a9b.firebaseapp.com",
+        projectId: "akiya-app-e7a9b",
+        storageBucket: "akiya-app-e7a9b.firebasestorage.app",
+        messagingSenderId: "665091929996",
+        appId: "1:665091929996:web:720cedd79b1ba1e4c748a9",
+        measurementId: "G-JV28SYR2NL",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      // ---------- localStorage ヘルパー ----------
+      function getLikedMuseums() {
+        return JSON.parse(localStorage.getItem("likedMuseums")) || [];
+      }
+      function setLikedMuseums(list) {
+        localStorage.setItem("likedMuseums", JSON.stringify(list));
+      }
+
+      function toggleFavoriteMuseum(museumId) {
+        let liked = getLikedMuseums();
+        if (liked.includes(museumId)) {
+          liked = liked.filter((id) => id !== museumId);
+          setLikedMuseums(liked);
+          return false;
+        } else {
+          liked.push(museumId);
+          setLikedMuseums(liked);
+          return true;
+        }
+      }
+
+      // ---------- データ取得 ----------
+      async function fetchMuseumsWithRooms() {
+        const museumsSnap = await getDocs(collection(db, "museums"));
+        const museums = await Promise.all(
+          museumsSnap.docs.map(async (hDoc) => {
+            const museum = { id: hDoc.id, ...hDoc.data() };
+            const roomsSnap = await getDocs(
+              collection(db, "museums", hDoc.id, "rooms")
+            );
+            museum.rooms = roomsSnap.docs.map((r) => ({
+              id: r.id,
+              ...r.data(),
+            }));
+            return museum;
+          })
+        );
+        return museums;
+      }
+
+      // ---------- レンダリング ----------
+      function renderMuseums(museums) {
+        const list = document.getElementById("museum-list");
+        list.innerHTML = "";
+
+        if (!museums.length) {
+          list.innerHTML =
+            '<p class="no-result">該当する博物館はありません。</p>';
+          return;
+        }
+
+        const likedMuseums = getLikedMuseums();
+
+        museums.forEach((h) => {
+          const link = document.createElement("a");
+          link.href = `museum.html?museumId=${h.id}`;
+          link.className = "museum-link";
+
+          const div = document.createElement("div");
+          div.className = "museum";
+
+          div.innerHTML = `
+            <div class="museum-header">
+              <img src="${h.mainPhotoUrl || "./image/item/noimage.png"}" alt="${
+            h.title || ""
+          }" class="museum-photo">
+              <h2 class="museum-title">${h.title || "名称未設定の博物館"}</h2>
+            </div>
+            <p class="museums__place"><strong>住所</strong> ${
+              typeof h.address === "string"
+                ? h.address
+                : h.address
+                ? `${h.address.prefecture || ""} ${h.address.city || ""} ${
+                    h.address.detail || ""
+                  }`
+                : "不明"
+            }</p>
+            <p class="museums__price"><strong>料金</strong> ${
+              h.priceYen ?? "未設定"
+            }円</p>
+            <h3 class="museums__room">部屋の展示</h3>
+            <ul>
+              ${h.rooms
+                .map(
+                  (r) => `
+                   <li class="room">
+  <div class="room-header">
+    <img src="${r.photo || "./image/item/noimage.png"}" alt="${
+                    r.title || ""
+                  }" class="room-photo">
+    <div class="room-info">
+      <strong>${r.title || "展示名なし"}</strong>（${r.floor || "-"}階）
+    </div>
+  </div>
+  <p class="room-description">${r.description || "説明なし"}</p>
+  <p class="room-category">カテゴリ: ${
+    Array.isArray(r.category) ? r.category.join(", ") : r.category ?? "未設定"
+  }</p>
+</li>
+
+                  `
+                )
+                .join("")}
+            </ul>
+          `;
+
+          const favIcon = document.createElement("img");
+          favIcon.className = "favorite-icon";
+          favIcon.alt = "お気に入り";
+          favIcon.style.width = "24px";
+          favIcon.style.height = "24px";
+
+          const redPath = "./image/item/heart.svg";
+          const grayPath = "./image/item/heart-gray.svg";
+
+          favIcon.src = likedMuseums.includes(h.id) ? redPath : grayPath;
+
+          favIcon.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const nowLiked = toggleFavoriteMuseum(h.id);
+            favIcon.src = nowLiked ? redPath : grayPath;
+          });
+
+          div.appendChild(favIcon);
+          link.appendChild(div);
+          list.appendChild(link);
+        });
+      }
+
+      // ---------- 検索 / 絞り込み / ソート ----------
+      function searchMuseums(museums, keyword) {
+        if (!keyword) return museums;
+        keyword = keyword.trim().toLowerCase();
+        return museums.filter((h) => {
+          const titleStr = h.title || "";
+          const addressStr =
+            typeof h.address === "string"
+              ? h.address
+              : h.address
+              ? `${h.address.prefecture || ""} ${h.address.city || ""} ${
+                  h.address.detail || ""
+                }`
+              : "";
+          const museumMatch =
+            titleStr.toLowerCase().includes(keyword) ||
+            addressStr.toLowerCase().includes(keyword);
+          const roomMatch = h.rooms.some((r) =>
+            [r.title || "", r.description || "", String(r.category || "")].some(
+              (f) => f.toLowerCase().includes(keyword)
+            )
+          );
+          return museumMatch || roomMatch;
+        });
+      }
+
+      function sortMuseums(museums, condition) {
+        const sorted = [...museums];
+        switch (condition) {
+          case "titleAsc":
+            sorted.sort((a, b) =>
+              (a.title || "").localeCompare(b.title || "", "ja")
+            );
+            break;
+          case "oldest":
+            sorted.sort(
+              (a, b) =>
+                (a.createdAt?.toMillis?.() || 0) -
+                (b.createdAt?.toMillis?.() || 0)
+            );
+            break;
+          case "newest":
+          default:
+            sorted.sort(
+              (a, b) =>
+                (b.createdAt?.toMillis?.() || 0) -
+                (a.createdAt?.toMillis?.() || 0)
+            );
+        }
+        return sorted;
+      }
+
+      function roomHasCategory(roomCategory, selectedLower) {
+        if (roomCategory == null) return false;
+        if (Array.isArray(roomCategory))
+          return roomCategory.some(
+            (c) =>
+              String(c || "")
+                .trim()
+                .toLowerCase() === selectedLower
+          );
+        const s = String(roomCategory || "").trim();
+        if (s === "") return false;
+        if (s.includes(","))
+          return s
+            .split(",")
+            .map((x) => x.trim().toLowerCase())
+            .includes(selectedLower);
+        return s.toLowerCase() === selectedLower;
+      }
+
+      function filterByCategory(museums, selectedCategoryLower) {
+        if (!selectedCategoryLower) return museums;
+        return museums.filter((h) =>
+          h.rooms.some((r) =>
+            roomHasCategory(r.category, selectedCategoryLower)
+          )
+        );
+      }
+
+      // ---------- 初期処理 ----------
+      let allMuseums = [];
+      let currentKeyword = "";
+      let currentSort = "newest";
+      let currentCategory = "";
+
+      window.updateList = function () {
+        let filtered = [...allMuseums];
+
+        if (currentKeyword) {
+          filtered = searchMuseums(filtered, currentKeyword);
+        }
+
+        if (currentCategory) {
+          filtered = filterByCategory(filtered, currentCategory);
+        }
+
+        if (currentPref) {
+          filtered = filtered.filter(
+            (h) => h.address?.prefecture === currentPref
+          );
+        }
+        if (currentCity) {
+          filtered = filtered.filter((h) => h.address?.city === currentCity);
+        }
+
+        filtered = sortMuseums(filtered, currentSort);
+
+        renderMuseums(filtered);
+      };
+
+      window.addEventListener("DOMContentLoaded", async () => {
+        allMuseums = await fetchMuseumsWithRooms();
+        updateList();
+
+        const searchInput = document.getElementById("search-input");
+        const searchBtn = document.getElementById("search-btn");
+        const sortSelect = document.getElementById("sort-select");
+        const categoryBtn = document.getElementById("toggle-category");
+        const categoryList = document.getElementById("category-list");
+
+        searchBtn.addEventListener("click", () => {
+          currentKeyword = searchInput.value;
+          updateList();
+        });
+
+        searchInput.addEventListener("keyup", (e) => {
+          if (e.key === "Enter") {
+            currentKeyword = searchInput.value;
+            updateList();
+          }
+        });
+
+        sortSelect.addEventListener("change", (e) => {
+          currentSort = e.target.value;
+          updateList();
+        });
+
+        categoryBtn.addEventListener("click", () => {
+          const isOpen = categoryList.classList.toggle("open");
+          categoryBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+          categoryList.style.display = isOpen ? "block" : "none";
+        });
+
+        document.querySelectorAll("#category-list button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const selected = String(btn.dataset.category || "")
+              .trim()
+              .toLowerCase();
+            if (currentCategory === selected) {
+              currentCategory = "";
+              document
+                .querySelectorAll("#category-list button")
+                .forEach((b) => b.classList.remove("active"));
+            } else {
+              currentCategory = selected;
+              document
+                .querySelectorAll("#category-list button")
+                .forEach((b) => b.classList.remove("active"));
+              btn.classList.add("active");
+            }
+            updateList();
+          });
+        });
+      });
+    </script>
+    <script src="./js/areas.js"></script>
+  </body>
+</html>

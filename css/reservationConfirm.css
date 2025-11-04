@@ -1,0 +1,134 @@
+@charset "UTF-8";
+
+body {
+    background-color: #FBF7ED;
+    color: #593916;
+    font-family: "Zen Maru Gothic", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    vertical-align: bottom;
+}
+
+.confirmation__inner {
+    width: 90%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.confirmation__top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: #FFEDCA;
+    margin-bottom: 2.8125em;
+    padding: 1.875em;
+}
+
+.confirmation__btn {
+    width: 1.875em;
+    position: relative;
+}
+
+.confirmation__heading {
+    font-size: 1.5rem;
+    font-weight: 500;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    text-align: center;
+}
+
+.reservation-item{
+    padding-bottom: 20px;
+    color: #E3B861;
+    font-weight: 500;
+}
+
+.reservation-item strong{
+    display: block;
+    padding: 0.3571428571em 0.7142857143em;
+    border-radius: 0.3571428571em;
+    background-color: #E3B861;
+    color: #fff;
+    font-weight: 500;
+}
+
+#finalConfirmBtn {
+    width: 50%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0.6em 0.6em;
+    box-shadow: 3px 3px 0px 0px #E3B861;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    color: #E3B861;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+#finalConfirmBtn:hover {
+    box-shadow: none;
+    transform: translate(3px, 3px);
+    background-color: #E3B861;
+    color: #fff;
+}
+
+/* ---reservationConfirm--- */
+
+.ticket-card{
+    margin-bottom: 20px;
+}
+
+.reservationConfirm-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.4em;
+}
+
+.detail{
+    padding-bottom: 20px;
+}
+
+.detail strong{
+    margin-right: 5px;
+    padding: 0.3571428571em 0.7142857143em;
+    color: #FFFFFE;
+    background-color: #E3B861;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.3571428571em;
+}
+
+#backBtn{
+    width: 58%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0.6em 0.6em;
+    box-shadow: 3px 3px 0px 0px #E3B861;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    color: #E3B861;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+#backBtn:hover {
+    box-shadow: none;
+    transform: translate(3px, 3px);
+    background-color: #E3B861;
+    color: #fff;
+}

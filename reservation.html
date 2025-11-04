@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>予約 / チケット購入 - わたしの博物館</title>
+    <!-- GoogleFonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Decol&family=Kaisei+Opti&family=Lora:ital,wght@0,400..700;1,400..700&family=Moirai+One&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <link rel="stylesheet" href="./css/reservation.css" />
+  </head>
+  <body>
+    <div class="reservation-container">
+      <div class="reservation__top">
+        <a href="./museum.html" class="reservation__btn"
+          ><img src="./image/item/btn_back.png" alt="前のページに戻る"
+        /></a>
+        <h1 class="reservation__heading">予約 / 申し込み</h1>
+      </div>
+
+      <div class="inner">
+        <div class="js-details"></div>
+
+        <form class="js-form" id="reservationForm">
+          <input
+            type="text"
+            name="name"
+            class="form__input"
+            placeholder="名前"
+            required
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="メールアドレス"
+            class="form__input"
+            required
+          />
+          <input
+            type="tel"
+            name="contact"
+            placeholder="電話番号"
+            class="form__input"
+            required
+          />
+
+          <div class="form-group">
+            <label for="date" class="form__label">訪問日</label>
+            <input
+              type="date"
+              name="date"
+              id="date"
+              class="form__input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="payment" class="form__label">お支払い方法:</label>
+            <select id="payment" name="payment" class="form__input" required>
+              <option value="credit_card">
+                Credit Card / クレジットカード
+              </option>
+              <option value="paypal">PayPal / ペイパール</option>
+              <option value="paypay">PayPay / ペイペイ</option>
+              <option value="cash">Cash on Visit / 現金支払い</option>
+            </select>
+          </div>
+
+          <textarea
+            name="remarks"
+            placeholder="備考欄 (Remarks)"
+            rows="3"
+            class="form__input"
+          ></textarea>
+
+          <button class="confirmBtn" type="submit">確認画面</button>
+        </form>
+
+        <div id="ticketConfirmation"></div>
+        <div id="confirmationBox"></div>
+        <!-- <button id="logoutBtn">Logout</button> -->
+      </div>
+    </div>
+
+    <script type="module" src="./js/reservation.js"></script>
+  </body>
+</html>

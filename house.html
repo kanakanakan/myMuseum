@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>空き家詳細</title>
+    <!-- GoogleFonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Decol&family=Kaisei+Opti&family=Lora:ital,wght@0,400..700;1,400..700&family=Moirai+One&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- reset -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <link rel="stylesheet" href="./css/house.css" />
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyA8WauCKutQwzK2kkBPprzwWoy7p9cAXVE",
+        authDomain: "akiya-app-e7a9b.firebaseapp.com",
+        projectId: "akiya-app-e7a9b",
+        storageBucket: "akiya-app-e7a9b.firebasestorage.app",
+        messagingSenderId: "665091929996",
+        appId: "1:665091929996:web:720cedd79b1ba1e4c748a9",
+        measurementId: "G-JV28SYR2NL",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const params = new URLSearchParams(window.location.search);
+      const houseId = params.get("houseId");
+      const from = params.get("from");
+
+      // ------------------------
+      // 閲覧履歴(localStorage)に記録するヘルパー
+      // ------------------------
+      function addToHouseHistory(houseId) {
+        try {
+          const history =
+            JSON.parse(localStorage.getItem("houseHistory")) || [];
+          const filtered = history.filter((item) => item.id !== houseId);
+          filtered.push({
+            id: houseId,
+            timestamp: Date.now(),
+          });
+          localStorage.setItem("houseHistory", JSON.stringify(filtered));
+        } catch (e) {
+          console.error("addToHouseHistory error:", e);
+        }
+      }
+
+      async function fetchHouseDetail() {
+        const contentEl = document.getElementById("content");
+
+        if (!houseId) {
+          contentEl.innerHTML = "<p>空き家が見つかりません。</p>";
+          return;
+        }
+
+        const houseRef = doc(db, "houses", houseId);
+        const houseSnap = await getDoc(houseRef);
+
+        if (!houseSnap.exists()) {
+          contentEl.innerHTML = "<p>この空き家は存在しません。</p>";
+          return;
+        }
+
+        const house = houseSnap.data();
+
+        // --- 閲覧履歴に追加 ---
+        addToHouseHistory(houseId);
+
+        // createdAtを取得
+        let createdAtText = "不明";
+        if (house.createdAt && house.createdAt.toDate) {
+          const date = house.createdAt.toDate();
+          createdAtText = date.toLocaleDateString("ja-JP", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          });
+        }
+
+        const roomsSnap = await getDocs(
+          collection(db, "houses", houseId, "rooms")
+        );
+        const rooms = roomsSnap.docs.map((r) => ({ id: r.id, ...r.data() }));
+
+        const addrText = house.address
+          ? [house.address.prefecture, house.address.city, house.address.detail]
+              .filter(Boolean)
+              .join(" ")
+          : "不明";
+
+        contentEl.innerHTML = `
+  <div class="house__top">
+    <a href="${
+      from === "history"
+        ? "./history.html"
+        : from === "likes"
+        ? "./likes.html"
+        : from === "rentals"
+        ? "./rentals.html"
+        : "./houses.html"
+    }" class="house__btn">
+
+      <img src="./image/item/btn_back.png" alt="前のページに戻る" />
+    </a>
+    <h1 class="house__heading">${house.title || "名称未設定の空き家"}</h1>
+  </div>
+  <div class="inner">
+    <p class="detail"><strong>住所</strong> ${addrText}</p>
+    <p class="detail"><strong>登録日</strong> ${createdAtText}</p>
+    <h2 class="house__detail">部屋一覧</h2>
+    <div class="slideshow">
+      ${rooms
+        .map(
+          (r) => `
+          <div class="slide">
+            <h3 class="house__title">${r.name || "部屋名なし"}</h3>
+            ${
+              r.photoUrl
+                ? `<img src="${r.photoUrl}" alt="${r.name}" class="room-photo">`
+                : ""
+            }
+            <p class="room__price detail"><strong>料金</strong> ${
+              r.priceYen ? r.priceYen + "円" : "未設定"
+            }</p>
+            <p class="room__area detail"><strong>面積</strong> ${
+              r.area ? r.area + "㎡" : "未設定"
+            }</p>
+            <p class="room__floor detail"><strong>階数</strong> ${
+              r.floor || "-"
+            }階</p>
+            <div class="btn__auto">
+              <a href="#" class="btn ticketBtn" data-room-id="${
+                r.id
+              }">申し込み</a>
+            </div>
+          </div>
+        `
+        )
+        .join("")}
+    </div>
+    <h2 class="acces__heading">アクセス</h2>
+    ${
+      house.mapUrl
+        ? `<div class="full-bleed"><iframe src="${house.mapUrl}" width="100%" height="300" style="border:0;" allowfullscreen></iframe></div>`
+        : ""
+    }
+    <p class="acces__detail">${house.access || "交通情報未設定"}</p>
+  </div>
+`;
+
+        // 各部屋の申し込みボタンにクリックイベントを追加
+        document.querySelectorAll(".ticketBtn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const roomId = btn.dataset.roomId;
+            window.location.href = `./application.html?houseId=${houseId}&roomId=${roomId}`;
+          });
+        });
+      }
+
+      window.addEventListener("DOMContentLoaded", fetchHouseDetail);
+    </script>
+  </head>
+  <body>
+    <div id="content">読み込み中...</div>
+  </body>
+</html>

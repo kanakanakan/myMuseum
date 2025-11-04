@@ -1,0 +1,222 @@
+@charset "UTF-8";
+
+// --------------------
+// 変数
+// --------------------
+$color-bg: #FBF7ED;
+$color-text: #593916;
+$color-text2: #CBA276;
+$color-title: #D6710F;
+$color-accent: #E3B861;
+$color-heading: #FFEDCA;
+$color-sub: #FFD98D;
+$color-box: #FFFFFE;
+
+// --------------------
+// ブレークポイント
+// --------------------
+$breakpoints: (
+    "tablet": "screen and (min-width: 640px)",
+    "desktop": "screen and (min-width: 800px)",
+    "full": "screen and (min-width: 1200px)"
+    ) !default;
+
+// --------------------
+// mixin
+// --------------------
+@mixin m-query($breakpoint) {
+    @media #{map-get($breakpoints, $breakpoint)} {
+        @content;
+    }
+}
+
+@mixin m-inner($w: 90%, $mw: 1200px) {
+    width: $w;
+    max-width: $mw;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@mixin m-flex($a: center, $j: space-between) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: $j;
+    align-items: $a;
+}
+
+// --------------------
+// function
+// --------------------
+@function f-rem($value) {
+    @return ($value / 16)+rem;
+}
+
+// --------------------
+// 共通設定
+// --------------------
+body {
+    margin: 0;
+    background-color: $color-bg;
+    color: $color-text;
+    font-family: "Zen Maru Gothic",
+        sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    vertical-align: bottom;
+}
+
+// --------------------
+// ヘッダー（お気に入りトップ）
+// --------------------
+.likesTop {
+    @include m-flex(center, flex-start
+);
+background-color: $color-heading;
+margin-bottom: (40em / 16);
+padding: (30em / 16);
+
+&__btn {
+    width: (30em / 16);
+    position: relative;
+}
+
+&__heading {
+    font-size: f-rem(24);
+    font-weight: 500;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+}
+
+// --------------------
+// タブエリア
+// --------------------
+.tabs {
+    display: flex;
+    gap: 0.6rem;
+    margin: 1rem;
+}
+
+.tab-button {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border: 3px solid $color-sub;
+    border-radius: 10px;
+    color: $color-accent;
+    background: $color-box;
+
+    &.active {
+        font-weight: bold;
+        color: $color-box;
+        background: $color-accent;
+        border: none;
+        border-bottom: 2px solid #bd9345;
+    }
+}
+
+.tab-content {
+    display: none;
+    margin: 0 1rem;
+
+    &.active {
+        display: block;
+    }
+}
+
+// --------------------
+// コンテンツ共通（空き家・博物館）
+// --------------------
+.house,
+.museum {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+}
+
+.house-photo,
+.room-photo,
+.museum-photo {
+    width: 45%;
+    height: auto;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+// --------------------
+// 博物館専用エリア
+// --------------------
+.museum ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.museum li.room {
+    margin: 0 0 0.6rem 0;
+    padding: 0.6rem;
+}
+
+// --------------------
+// museums__room
+// （重複していたので統合）
+// --------------------
+.museums__room {
+    width: 100%;
+    display: block;
+    margin: 0.5rem 0 0.4rem;
+    padding: 0.25rem 0.6rem;
+    background-color: $color-accent;
+    color: $color-box;
+    border-radius: 0.357rem;
+    font-weight: 500;
+}
+
+// --------------------
+// room（共通）
+// --------------------
+.room-photo {
+    width: 40%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+}
+
+.room strong {
+    all: unset;
+}
+
+.room-header{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.room__price {
+    margin: 0.9375em 0;
+}
+
+.room__area {
+    margin: 0.9375em 0;
+}
+
+.room__floor {
+    margin: 0.9375em 0;
+}
+
+.room__price strong,
+.room__area strong,
+.room__floor strong {
+    padding: 0.3571428571em 0.7142857143em;
+    color: #FFFFFE;
+    background-color: #E3B861;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.3571428571em;
+}

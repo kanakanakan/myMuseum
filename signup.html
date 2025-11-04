@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- GoogleFonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Decol&family=Kaisei+Opti&family=Lora:ital,wght@0,400..700;1,400..700&family=Moirai+One&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- reset -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <title>新規登録 - わたしの博物館</title>
+    <link rel="stylesheet" href="css/auth.css" />
+  </head>
+  <body>
+    <div class="auth-container">
+      <h1>新規登録</h1>
+      <form id="signupForm">
+        <!-- 名前 -->
+        <input type="text" id="name" placeholder="名前 (必須)" required /><br />
+
+        <!-- フリガナ -->
+        <input
+          type="text"
+          id="furigana"
+          placeholder="フリガナ (必須)"
+          required
+        /><br />
+
+        <!-- 郵便番号 -->
+        <input
+          type="text"
+          id="postalCode"
+          placeholder="郵便番号（例: 123-4567）(必須)"
+          pattern="\d{3}-\d{4}"
+          required
+        /><br />
+
+        <!-- 都道府県 -->
+        <input
+          type="text"
+          id="prefecture"
+          placeholder="都道府県 (必須)"
+          required
+        /><br />
+
+        <!-- 市区町村 -->
+        <input
+          type="text"
+          id="city"
+          placeholder="市区町村 (必須)"
+          required
+        /><br />
+
+        <!-- 番地 -->
+        <input
+          type="text"
+          id="address"
+          placeholder="番地 (必須)"
+          required
+        /><br />
+
+        <!-- 建物名 -->
+        <input type="text" id="building" placeholder="建物名（任意）" /><br />
+
+        <!-- メールアドレス -->
+        <input
+          type="email"
+          id="email"
+          placeholder="メールアドレス"
+          required
+        /><br />
+
+        <!-- パスワード -->
+        <input
+          type="password"
+          id="password"
+          placeholder="パスワード"
+          required
+        /><br />
+
+        <!-- 管理者コード -->
+        <input
+          type="text"
+          id="adminCode"
+          placeholder="管理者コード（任意）"
+        /><br />
+
+        <button type="submit">登録</button>
+
+        <p class="switch">
+          すでにアカウントをお持ちですか？
+          <a href="login.html">ログインはこちら</a>
+        </p>
+      </form>
+    </div>
+
+    <script type="module" src="js/auth.js"></script>
+  </body>
+</html>

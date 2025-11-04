@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- GoogleFonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Decol&family=Kaisei+Opti&family=Lora:ital,wght@0,400..700;1,400..700&family=Moirai+One&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- reset -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <title>プロフィール編集 - わたしの博物館</title>
+    <link rel="stylesheet" href="./css/profile.css" />
+  </head>
+  <body>
+    <div class="profileTop">
+      <a href="./mypage.html" class="profileTop__btn">
+        <img src="./image/item/btn_back.png" alt="前のページに戻る" />
+      </a>
+      <h1 class="profileTop__heading">プロフィール編集</h1>
+    </div>
+
+    <div class="profile-container">
+      <form id="profileForm">
+        <label for="name">名前</label>
+        <input type="text" id="name" placeholder="名前" required />
+
+        <label for="kana">フリガナ</label>
+        <input type="text" id="kana" placeholder="フリガナ" />
+
+        <label for="postal">郵便番号</label>
+        <input type="text" id="postal" placeholder="123-4567" />
+
+        <label for="prefecture">都道府県</label>
+        <input type="text" id="prefecture" placeholder="東京都" />
+
+        <label for="city">市区町村</label>
+        <input type="text" id="city" placeholder="渋谷区" />
+
+        <label for="address">番地</label>
+        <input type="text" id="address" placeholder="1-2-3" />
+
+        <label for="building">建物名</label>
+        <input type="text" id="building" placeholder="マンション名 101号室" />
+
+        <label for="email">メールアドレス</label>
+        <input type="email" id="email" placeholder="メールアドレス" required />
+
+        <button type="submit">保存</button>
+      </form>
+    </div>
+
+    <script type="module" src="./js/profile.js"></script>
+  </body>
+</html>

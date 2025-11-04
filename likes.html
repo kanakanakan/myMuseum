@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>いいね一覧</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Decol&family=Kaisei+Opti&family=Lora:ital,wght@0,400..700;1,400..700&family=Moirai+One&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Reset -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="./css/houses.css" />
+    <link rel="stylesheet" href="./css/museums.css" />
+    <link rel="stylesheet" href="./css/likes.css" />
+
+    <script type="module">
+      import { db, collection, doc, getDoc, getDocs } from "./js/firebase.js";
+
+      // ==============================
+      // 博物館データ取得
+      // ==============================
+      async function fetchMuseumWithRooms(museumId) {
+        const museumSnap = await getDoc(doc(db, "museums", museumId));
+        if (!museumSnap.exists()) return null;
+
+        const museum = { id: museumSnap.id, ...museumSnap.data() };
+        const roomsSnap = await getDocs(
+          collection(db, "museums", museumId, "rooms")
+        );
+        museum.rooms = roomsSnap.docs.map((r) => ({ id: r.id, ...r.data() }));
+        return museum;
+      }
+
+      async function renderMuseums() {
+        const container = document.getElementById("museum-list");
+        const likedMuseums =
+          JSON.parse(localStorage.getItem("likedMuseums")) || [];
+
+        if (!likedMuseums.length) {
+          container.innerHTML =
+            '<p class="no-result">お気に入りの博物館はありません。</p>';
+          return;
+        }
+
+        container.innerHTML = "";
+        for (const museumId of likedMuseums) {
+          const m = await fetchMuseumWithRooms(museumId);
+          if (!m) continue;
+
+          const addrText = m.address
+            ? `${m.address.prefecture || ""}${m.address.city || ""}${
+                m.address.detail || ""
+              }`
+            : "不明";
+
+          const link = document.createElement("a");
+          link.href = `museum.html?museumId=${m.id}&from=likes`;
+          link.className = "museum-link";
+
+          const div = document.createElement("div");
+          div.className = "museum";
+          div.innerHTML = `
+          <a href="museum.html?museumId=${m.id}">
+            <div class="museum-header">
+              <img src="${m.mainPhotoUrl || "./image/item/noimage.png"}" alt="${
+            m.title
+          }" class="museum-photo" />
+              <h2 class="museum-title">${m.title || "名称未設定の博物館"}</h2>
+            </div>
+          </a>
+          <div class="museum-info">
+            <p class="museums__place"><strong>住所</strong> ${addrText}</p>
+            <p class="museums__price"><strong>料金</strong> ${
+              m.priceYen ?? "未設定"
+            }円</p>
+            <h3 class="museums__room">部屋の展示</h3>
+            <ul class="room-list">
+              ${m.rooms
+                .map(
+                  (r) => `
+                <li class="room">
+                  <div class="room-header">
+                    <img src="${r.photo || "./image/item/noimage.png"}" alt="${
+                    r.title || "展示写真"
+                  }" class="room-photo" />
+                    <p><strong>${r.title || "展示名なし"}</strong>（${
+                    r.floor || "-"
+                  }階）</p>
+                  </div>
+                  <p>${r.description || "説明なし"}</p>
+                  <p>カテゴリ: ${
+                    Array.isArray(r.category)
+                      ? r.category.join(", ")
+                      : r.category ?? "未設定"
+                  }</p>
+                </li>
+              `
+                )
+                .join("")}
+            </ul>
+          </div>
+        `;
+
+          link.appendChild(div);
+          container.appendChild(link);
+        }
+      }
+
+      // ==============================
+      // 空き家データ取得
+      // ==============================
+      async function fetchHouseWithRooms(houseId) {
+        const houseSnap = await getDoc(doc(db, "houses", houseId));
+        if (!houseSnap.exists()) return null;
+
+        const house = { id: houseSnap.id, ...houseSnap.data() };
+        const roomsSnap = await getDocs(
+          collection(db, "houses", houseId, "rooms")
+        );
+        house.rooms = roomsSnap.docs.map((r) => ({ id: r.id, ...r.data() }));
+        return house;
+      }
+
+      async function renderHouses() {
+        const container = document.getElementById("house-list");
+        const likedHouses =
+          JSON.parse(localStorage.getItem("likedHouses")) || [];
+
+        if (!likedHouses.length) {
+          container.innerHTML =
+            '<p class="no-result">お気に入りの空き家はありません。</p>';
+          return;
+        }
+
+        container.innerHTML = "";
+        for (const houseId of likedHouses) {
+          const h = await fetchHouseWithRooms(houseId);
+          if (!h) continue;
+
+          const addrText = h.address
+            ? [h.address.prefecture, h.address.city, h.address.detail]
+                .filter(Boolean)
+                .join("")
+            : "不明";
+
+          const link = document.createElement("a");
+          link.href = `house.html?houseId=${h.id}&from=likes`;
+          link.className = "house-link";
+
+          const div = document.createElement("div");
+          div.className = "house";
+
+          div.innerHTML = `
+          <div class="house-header">
+            <img src="${h.photoUrl || "./image/item/noimage.png"}" alt="${
+            h.title || ""
+          }" class="house-photo">
+            <h2 class="house-title">${h.title || "名称未設定の空き家"}</h2>
+          </div>
+          <p class="house__place"><strong>住所</strong> ${addrText}</p>
+          <ul class="room-list">
+            ${h.rooms
+              .map(
+                (r) => `
+              <li class="room">
+                <h4 class="house__room">${r.name || "部屋名なし"}</h4>
+                <img src="${r.photoUrl || "./image/item/noimage.png"}" alt="${
+                  r.name
+                }" class="room-photo" />
+                <p class="room__price"><strong>料金</strong> ${
+                  r.priceYen ? r.priceYen + "円" : "未設定"
+                }</p>
+                <p class="room__area"><strong>面積</strong> ${
+                  r.area ? r.area + "㎡" : "未設定"
+                }</p>
+                <p class="room__floor"><strong>階数</strong> ${
+                  r.floor || "-"
+                }階</p>
+              </li>
+            `
+              )
+              .join("")}
+          </ul>
+        `;
+          link.appendChild(div);
+          container.appendChild(link);
+        }
+      }
+
+      // ==============================
+      // タブ切り替え
+      // ==============================
+      function setupTabs() {
+        const tabButtons = document.querySelectorAll(".tab-button");
+        const tabContents = document.querySelectorAll(".tab-content");
+
+        tabButtons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            tabButtons.forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const target = btn.dataset.tab;
+            tabContents.forEach((content) =>
+              content.classList.toggle("active", content.id === target)
+            );
+          });
+        });
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        setupTabs();
+        renderMuseums();
+        renderHouses();
+      });
+    </script>
+  </head>
+
+  <body>
+    <div class="likesTop">
+      <a href="./mypage.html" class="likesTop__btn">
+        <img src="./image/item/btn_back.png" alt="前のページに戻る" />
+      </a>
+      <h1 class="likesTop__heading">いいね一覧</h1>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-button active" data-tab="museums">博物館</button>
+      <button class="tab-button" data-tab="houses">空き家</button>
+    </div>
+
+    <div id="museums" class="tab-content active">
+      <div id="museum-list"></div>
+    </div>
+
+    <div id="houses" class="tab-content">
+      <div id="house-list"></div>
+    </div>
+  </body>
+</html>

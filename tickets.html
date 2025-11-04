@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/tickets.css" />
+    <title>チケット一覧</title>
+
+    <script type="module">
+      import { db, auth } from "./js/firebase.js";
+      import {
+        collection,
+        query,
+        where,
+        getDocs,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+      async function fetchTickets(userId) {
+        try {
+          const q = query(
+            collection(db, "reservations"),
+            where("userId", "==", userId)
+          );
+          console.log("Running tickets query for", { userId });
+          const snap = await getDocs(q);
+          console.log("tickets snapshot.size =", snap.size);
+
+          const results = await Promise.all(
+            snap.docs.map(async (d) => {
+              const data = d.data();
+              const itemId = data.museumId || data.itemId || null;
+              let photoUrl = "./image/item/museum_yamashita.jpeg";
+              let title = "タイトル未設定";
+
+              if (itemId) {
+                try {
+                  const mDoc = await getDoc(doc(db, "museums", itemId));
+                  if (mDoc.exists()) {
+                    const md = mDoc.data();
+                    photoUrl = md.mainPhotoUrl || photoUrl;
+                    title = md.title || title;
+                  }
+                } catch (err) {
+                  console.warn("fetch museum failed:", err);
+                }
+              }
+
+              let visitDate = "未設定";
+              if (data.date && typeof data.date.toDate === "function") {
+                const dd = data.date.toDate();
+                visitDate = `${dd.getFullYear()}年${
+                  dd.getMonth() + 1
+                }月${dd.getDate()}日`;
+              } else if (typeof data.date === "string") {
+                visitDate = data.date;
+              }
+
+              return { ...data, itemId, photoUrl, title, visitDate };
+            })
+          );
+
+          return results;
+        } catch (err) {
+          console.error("fetchTickets error:", err);
+          return [];
+        }
+      }
+
+      function renderTickets(containerId, tickets) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = "";
+
+        const paymentLabels = {
+          credit_card: "クレジットカード",
+          cash: "現金",
+          bank_transfer: "銀行振込",
+          convenience_store: "コンビニ支払い",
+          paypay: "PayPay",
+          unspecified: "未設定",
+        };
+
+        if (!tickets.length) {
+          container.innerHTML = `<p class="no-data">データがありません。</p>`;
+          return;
+        }
+
+        tickets.forEach((t) => {
+          const card = document.createElement("div");
+          card.className = "museum";
+          const museumUrl = `./museum.html?museumId=${t.itemId}&from=tickets`;
+
+          card.addEventListener("click", () => {
+            window.location.href = museumUrl;
+          });
+
+          card.innerHTML = `
+            <div class="museum-header">
+              <img class="museum-photo" src="${t.photoUrl}" alt="${t.title}" />
+              <div class="museum-info">
+                <h3 class="museum-title">${t.title}</h3>
+              </div>
+            </div>
+            <div class="room">
+              <p class="detail"><strong>来館日</strong> ${t.visitDate}</p>
+              <p class="detail"><strong>支払い</strong> ${
+                paymentLabels[t.payment] || "未設定"
+              }</p>
+              <p class="detail"><strong>備考</strong> ${t.remarks || "なし"}</p>
+            </div>
+            <a class="museums__room"
+               href="${museumUrl}"
+               onclick="event.stopPropagation();">
+              博物館を見る
+            </a>
+          `;
+
+          container.appendChild(card);
+        });
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        const backBtn = document.getElementById("backBtn");
+        if (backBtn) {
+          backBtn.addEventListener("click", (e) => {});
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) {
+            alert("ログインしてください。");
+            window.location.href = "login.html";
+            return;
+          }
+          const userId = user.uid;
+          const tickets = await fetchTickets(userId);
+          console.log("tickets:", tickets);
+          renderTickets("boughtTicketsList", tickets);
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="ticketsTop">
+        <a id="backBtn" href="./mypage.html" class="ticketsTop__btn">
+          <img src="./image/item/btn_back.png" alt="前のページに戻る" />
+        </a>
+        <h1 class="ticketsTop__heading">チケット一覧</h1>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="museums__inner">
+        <section class="rented-houses-section">
+          <div id="rentedHousesList"></div>
+        </section>
+
+        <section class="bought-tickets-section">
+          <div id="boughtTicketsList"></div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

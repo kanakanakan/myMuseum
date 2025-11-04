@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/rentals.css" />
+    <title>借りている物件一覧</title>
+
+    <script type="module">
+      // Firebase 共通設定を読み込み
+      import { db, auth } from "./js/firebase.js";
+
+      import {
+        collection,
+        query,
+        where,
+        getDocs,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+      // ============================
+      // ユーザーの予約データを取得
+      // ============================
+      // 1. fetchReservationsByCategory 関数を物件専用にシンプル化
+      async function fetchRentedHouses(userId) {
+        try {
+          const q = query(
+            collection(db, "applications"),
+            where("userId", "==", userId),
+            where("category", "==", "renter")
+          );
+
+          console.log("Fetching rented houses for userId:", userId);
+          const snapshot = await getDocs(q);
+          console.log("applications snapshot.size =", snapshot.size);
+
+          const results = await Promise.all(
+            snapshot.docs.map(async (docSnap) => {
+              const data = docSnap.data();
+              const houseId = data.houseId || null;
+              let photoUrl = "./image/item/museum_yamashita.jpeg";
+              let itemTitle = "タイトル未設定";
+
+              try {
+                if (houseId) {
+                  const houseDoc = await getDoc(doc(db, "houses", houseId));
+                  if (houseDoc.exists()) {
+                    const houseData = houseDoc.data();
+                    photoUrl = houseData.photoUrl || photoUrl;
+                    itemTitle = houseData.title || itemTitle;
+                  }
+                }
+              } catch (err) {
+                console.warn("Error fetching house data:", err);
+              }
+
+              // 日付整形
+              let visitDate = "未設定";
+              const dateField = data.createdAt || data.date;
+
+              if (dateField) {
+                if (typeof dateField.toDate === "function") {
+                  const d = dateField.toDate();
+                  visitDate = `${d.getFullYear()}年${
+                    d.getMonth() + 1
+                  }月${d.getDate()}日`;
+                } else if (typeof dateField === "string") {
+                  visitDate = dateField;
+                }
+              }
+
+              return {
+                ...data,
+                houseId,
+                photoUrl,
+                itemTitle,
+                visitDate,
+              };
+            })
+          );
+
+          return results;
+        } catch (err) {
+          console.error("fetchRentedHouses error:", err);
+          return [];
+        }
+      }
+
+      // ============================
+      // カードを描画
+      // ============================
+      // 2. renderCards 関数をシンプル化（物件表示専用）
+      function renderRentedHouses(houses) {
+        const container = document.getElementById("rentedHousesList");
+        if (!container) {
+          console.error("Container #rentedHousesList not found");
+          return;
+        }
+
+        container.innerHTML = "";
+
+        const paymentLabels = {
+          credit_card: "クレジットカード",
+          cash: "現金",
+          bank_transfer: "銀行振込",
+          convenience_store: "コンビニ支払い",
+          paypay: "PayPay",
+          unspecified: "未設定",
+        };
+
+        if (!houses.length) {
+          container.innerHTML = `<p class="no-data">借りている物件はありません。</p>`;
+          return;
+        }
+
+        houses.forEach((house) => {
+          const card = document.createElement("div");
+          card.className = "museum";
+
+          // カード全体をクリックで詳細へ
+          card.style.cursor = "pointer";
+          card.addEventListener("click", () => {
+            window.location.href = `./house.html?houseId=${house.houseId}&from=rentals`;
+          });
+
+          card.innerHTML = `
+      <div class="museum-header">
+        <img class="museum-photo" src="${house.photoUrl}" alt="${
+            house.itemTitle
+          }" />
+        <div class="museum-info">
+          <h3 class="museum-title">${house.itemTitle}</h3>
+        </div>
+      </div>
+      <div class="room">
+        <p class="detail"><strong>予約日</strong> ${house.visitDate}</p>
+        <p class="detail"><strong>支払い方法</strong> ${
+          paymentLabels[house.payment] || "未設定"
+        }</p>
+        <p class="detail"><strong>備考</strong> ${house.remarks || "なし"}</p>
+        <a class="museums__room"
+           href="./house.html?houseId=${house.houseId}&from=rentals"
+           onclick="event.stopPropagation();">
+          物件を見る
+        </a>
+      </div>
+    `;
+
+          container.appendChild(card);
+        });
+      }
+
+      // ============================
+      // ログイン状態の確認
+      // ============================
+      window.addEventListener("DOMContentLoaded", () => {
+        // 戻るボタンなど既存の処理
+        const backBtn = document.getElementById("backBtn");
+        if (backBtn)
+          backBtn.addEventListener(
+            "click",
+            () => (window.location.href = "index.html")
+          );
+
+        // Firebase 認証監視（DOMが全部ある状態で実行）
+        onAuthStateChanged(auth, async (user) => {
+          console.log("onAuthStateChanged fired, user:", user);
+          if (user) {
+            const userId = user.uid;
+            try {
+              const rentedHouses = await fetchRentedHouses(userId);
+              console.log("rentedHouses:", rentedHouses);
+              renderRentedHouses(rentedHouses);
+            } catch (err) {
+              console.error("Error fetching rented houses:", err);
+            }
+          } else {
+            alert("ログインしてください。");
+            window.location.href = "login.html";
+          }
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="rentalsTop">
+        <a href="./mypage.html" class="rentalsTop__btn">
+          <img src="./image/item/btn_back.png" alt="前のページに戻る" />
+        </a>
+        <h1 class="rentalsTop__heading">借りている物件一覧</h1>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="museums__inner">
+        <section class="rented-houses-section">
+          <div id="rentedHousesList"></div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,260 @@
+body {
+  margin: 0;
+  background-color: #FBF7ED;
+  color: #593916;
+  font-family: "Zen Maru Gothic", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: bottom;
+}
+
+.historyTop {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: #FFEDCA;
+  margin-bottom: 2.5em;
+  padding: 1.875em;
+}
+.historyTop__btn {
+  width: 1.875em;
+  position: relative;
+}
+.historyTop__heading {
+  font-size: 1.5rem;
+  font-weight: 500;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  text-align: center;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.6rem;
+  margin: 1rem;
+}
+
+.tab-button {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: 3px solid #FFD98D;
+  border-radius: 10px;
+  color: #E3B861;
+  background: #FFFFFE;
+}
+
+.tab-button.active {
+  font-weight: bold;
+  color: #FFFFFE;
+  background: #E3B861;
+  border: none;
+  border-bottom: 2px solid #bd9345;
+}
+
+.tab-content {
+  display: none;
+  margin: 0 1rem;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.house-photo,
+.room-photo,
+.museum-photo {
+  width: 45%;
+  height: auto;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.house,
+.museum {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.museums__room {
+  margin-bottom: 1.25em;
+  padding: 0.3571428571em 0.7142857143em;
+  background-color: #E3B861;
+  color: #FFFFFE;
+  border-radius: 0.3571428571em;
+  font-weight: 500;
+  display: block;
+  width: 100%;
+  margin-top: 0.75em;
+}
+
+.museums__place,
+.museums__price {
+  flex: 0 0 auto;
+}
+
+.museums__room {
+  width: 100%;
+  display: block;
+  margin-top: 0.75em;
+}
+
+.museum > p,
+.museums__place,
+.museums__price {
+  flex: 0 0 auto;
+  margin: 0 0 0.25rem;
+  padding: 0;
+  font-size: 0.95rem;
+}
+
+.museums__room {
+  width: 100%;
+  display: block;
+  margin: 0.5rem 0 0.4rem;
+  padding: 0.25rem 0.6rem;
+  font-weight: 500;
+}
+
+.museum ul {
+  margin: 0 0 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.museum li.room {
+  margin: 0 0 0.6rem 0;
+  padding: 0.6rem;
+}
+
+.museums__room {
+  margin-bottom: 1.25em;
+  padding: 0.3571428571em 0.7142857143em;
+  background-color: #E3B861;
+  color: #FFFFFE;
+  border-radius: 0.3571428571em;
+  font-weight: 500;
+  display: block;
+  width: 100%;
+  margin-top: 0.75em;
+}
+
+.museums__place,
+.museums__price {
+  flex: 0 0 auto;
+}
+
+.museums__room {
+  width: 100%;
+  display: block;
+  margin-top: 0.75em;
+}
+
+.museum > p,
+.museums__place,
+.museums__price {
+  flex: 0 0 auto;
+  margin: 0 0 0.25rem;
+  padding: 0;
+  font-size: 0.95rem;
+}
+
+.museums__room {
+  width: 100%;
+  display: block;
+  margin: 0.5rem 0 0.4rem;
+  padding: 0.25rem 0.6rem;
+  font-weight: 500;
+}
+
+.museum ul {
+  margin: 0 0 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.museum li.room {
+  margin: 0 0 0.6rem 0;
+  padding: 0.6rem;
+}
+
+.museums__place strong {
+  padding: 0.3571428571em 0.7142857143em;
+  color: #FFFFFE;
+  background-color: #E3B861;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.3571428571em;
+}
+
+.museums__room {
+  margin-top: 1.25em;
+  margin-bottom: 0.625em;
+  padding: 0.3125em 0.625em;
+  background-color: #E3B861;
+  color: #FFFFFE;
+  border-radius: 0.3125em;
+  font-weight: 500;
+}
+
+.museums__price strong {
+  margin: 0.9375em 0;
+  padding: 0.3571428571em 0.7142857143em;
+  color: #FFFFFE;
+  background-color: #E3B861;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.3571428571em;
+}
+
+.house ul {
+  width: 100%;
+}
+
+.room strong {
+  all: unset;
+}
+
+.room__price strong, .room__area strong, .room__floor strong {
+  margin: 0.9375em 0;
+  padding: 0.3571428571em 0.7142857143em;
+  color: #FFFFFE;
+  background-color: #E3B861;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.3571428571em;
+}
+
+.room__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.room-photo {
+  width: 40%;
+  aspect-ratio: 3/4;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+.room-info {
+  flex: 1;
+}
+
+.room-info strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+/*# sourceMappingURL=history.css.map */

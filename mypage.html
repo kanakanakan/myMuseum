@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>マイページ</title>
+    <!-- GoogleFonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Decol&family=Kaisei+Opti&family=Lora:ital,wght@0,400..700;1,400..700&family=Moirai+One&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- reset -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <link rel="stylesheet" href="./css/mypage.css" />
+  </head>
+  <body>
+    <div class="heading">
+      <div class="heading__inner">
+        <div class="heading__btn">
+          <a href="./index.html"
+            ><img src="./image/item/btn_back.png" alt="トップページに戻る"
+          /></a>
+        </div>
+        <h1 class="heading__text">マイページ</h1>
+      </div>
+    </div>
+
+    <div class="profile">
+      <div class="profile__inner">
+        <img
+          id="user-icon"
+          src="./image/item/default-user.png"
+          alt="ユーザーアイコン"
+        />
+        <h2 id="user-name">ゲスト</h2>
+      </div>
+    </div>
+
+    <div class="menu">
+      <div class="menu__inner">
+        <button class="menu__setting" onclick="location.href='settings.html'">
+          設定
+        </button>
+        <div class="menu-list">
+          <button class="menu-list__btn" onclick="location.href='tickets.html'">
+            <img src="./image/item/ticket.png" alt="" class="menu-list__top" />
+            <p class="menu-list__bottom">チケット一覧</p>
+          </button>
+          <button class="menu-list__btn" onclick="location.href='rentals.html'">
+            <img src="./image/item/house.png" alt="" class="menu-list__top" />
+            <p class="menu-list__bottom">借りている物件一覧</p>
+          </button>
+          <button class="menu-list__btn" onclick="location.href='history.html'">
+            <img src="./image/item/time.png" alt="" class="menu-list__top" />
+            <p class="menu-list__bottom">閲覧履歴</p>
+          </button>
+          <button class="menu-list__btn" onclick="location.href='likes.html'">
+            <img src="./image/item/heart.png" alt="" class="menu-list__top" />
+            <p class="menu-list__bottom">いいね一覧</p>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      // Firebase CDN import
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+      // Firebase設定（auth.jsと同じ）
+      const firebaseConfig = {
+        apiKey: "AIzaSyA8WauCKutQwzK2kkBPprzwWoy7p9cAXVE",
+        authDomain: "akiya-app-e7a9b.firebaseapp.com",
+        projectId: "akiya-app-e7a9b",
+        storageBucket: "akiya-app-e7a9b.firebasestorage.app",
+        messagingSenderId: "665091929996",
+        appId: "1:665091929996:web:720cedd79b1ba1e4c748a9",
+        measurementId: "G-JV28SYR2NL",
+      };
+
+      // 初期化
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      // ユーザー情報を取得して表示
+      onAuthStateChanged(auth, async (user) => {
+        const nameEl = document.getElementById("user-name");
+
+        if (user) {
+          try {
+            // Firestoreのユーザーデータを取得
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              nameEl.textContent =
+                userData.name || user.displayName || "名前未設定";
+            } else {
+              // Firestoreにデータがない場合、displayNameを表示
+              nameEl.textContent = user.displayName || "名前未設定";
+            }
+
+            if (user.photoURL) {
+              document.getElementById("user-icon").src = user.photoURL;
+            }
+          } catch (error) {
+            console.error("ユーザーデータ取得エラー:", error);
+            nameEl.textContent = "データ取得に失敗しました";
+          }
+        } else {
+          nameEl.textContent = "ログインしていません";
+        }
+      });
+    </script>
+  </body>
+</html>

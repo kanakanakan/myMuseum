@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>博物館詳細</title>
+    <!-- GoogleFonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Decol&family=Kaisei+Opti&family=Lora:ital,wght@0,400..700;1,400..700&family=Moirai+One&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <link rel="stylesheet" href="./css/museum.css" />
+
+    <script type="module">
+      import { db, collection, doc, getDoc, getDocs } from "./js/firebase.js";
+
+      // デバッグ用のログ追加
+      const params = new URLSearchParams(window.location.search);
+      const museumId = params.get("museumId");
+      const from = params.get("from");
+      console.log("URL params:", { museumId, from }); // デバッグログ追加
+
+      // 閲覧履歴(localStorage)に記録する関数
+      function addToMuseumHistory(museumId) {
+        if (!museumId) return;
+        try {
+          const history =
+            JSON.parse(localStorage.getItem("viewedMuseums")) || [];
+          const filtered = history.filter((item) => item.id !== museumId);
+          filtered.push({ id: museumId, viewedAt: Date.now() });
+          localStorage.setItem("viewedMuseums", JSON.stringify(filtered));
+        } catch (e) {
+          console.error("addToMuseumHistory error:", e);
+        }
+      }
+
+      async function fetchMuseumDetail() {
+        const content = document.getElementById("content");
+
+        // デバッグログ追加
+        console.log("fetchMuseumDetail called with:", { museumId, from });
+
+        if (!museumId) {
+          content.innerHTML = "<p>博物館が見つかりません。</p>";
+          return;
+        }
+
+        try {
+          const museumRef = doc(db, "museums", museumId);
+          const museumSnap = await getDoc(museumRef);
+
+          if (!museumSnap.exists()) {
+            content.innerHTML = "<p>この博物館は存在しません。</p>";
+            return;
+          }
+
+          const museum = museumSnap.data();
+
+          // 戻るリンクのURL決定（デバッグログ追加）
+          const backUrl =
+            from === "tickets" ? "./tickets.html" : "./museums.html";
+          console.log("Back URL:", backUrl);
+
+          // addressオブジェクトを組み立て
+          let addressText = "不明";
+          if (museum.address) {
+            const { prefecture = "", city = "", detail = "" } = museum.address;
+            addressText = `${prefecture}${city}${detail}` || "不明";
+          }
+
+          // rooms サブコレクションを取得
+          const roomsSnap = await getDocs(
+            collection(db, "museums", museumId, "rooms")
+          );
+          const rooms = roomsSnap.docs.map((r) => ({ id: r.id, ...r.data() }));
+
+          let roomsHTML = "";
+          if (rooms.length > 0) {
+            roomsHTML = `
+            <div class="inner">
+              <h2 class="museum__detail">展示状況</h2>
+              <div class="slideshow">
+                ${rooms
+                  .map(
+                    (r) => `
+                    <div class="slide">
+                      ${
+                        r.photo
+                          ? `<img src="${r.photo}" alt="${
+                              r.title || "展示写真"
+                            }" class="museum-photo" style="width:40%; aspect-ratio:3/4; object-fit:cover;">`
+                          : ""
+                      }
+                      <h3 class="museum__title">${r.title || "展示名なし"}</h3>
+                      <p>${r.description || "説明なし"}</p>
+                      <p>カテゴリ: ${r.category || "未設定"}</p>
+                    </div>
+                  `
+                  )
+                  .join("")}
+              </div>
+            </div>`;
+          } else {
+            roomsHTML = `<h2>展示状況</h2><p>展示はまだ登録されていません。</p>`;
+          }
+
+          content.innerHTML = `
+            <div class="museum__top">
+              <a href="${backUrl}" class="museum__btn">
+                <img src="./image/item/btn_back.png" alt="前のページに戻る" />
+              </a>
+              <h1 class="museum__heading">${
+                museum.title || "名称未設定の博物館"
+              }</h1>
+            </div>
+            <div class="inner">
+              <p class="detail"><strong>住所</strong> ${addressText}</p>
+              <p class="detail"><strong>会期</strong> ${
+                museum.period || "未定"
+              }</p>
+              <p class="detail"><strong>入場料</strong> ${
+                museum.priceYen ? museum.priceYen + "円" : "未設定"
+              }</p>
+            </div>
+
+            ${roomsHTML}
+
+            <div class="btn__auto">
+              <a id="ticketBtn" href="./reservation.html?museumId=${museumId}&from=museum" class="btn">チケットを購入</a>
+            </div>
+
+            <h2 class="acces__heading inner">アクセス</h2>
+            ${
+              museum.mapUrl && museum.mapUrl.startsWith("http")
+                ? `<iframe src="${museum.mapUrl}" width="100%" height="300" style="border:0;" allowfullscreen></iframe>`
+                : ""
+            }
+            <p class="acces__detail inner">${
+              museum.access || "交通情報未設定"
+            }</p>
+          `;
+        } catch (err) {
+          console.error("Error fetching museum details:", err);
+          content.innerHTML = "<p>データの取得中にエラーが発生しました。</p>";
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", fetchMuseumDetail);
+    </script>
+  </head>
+  <body>
+    <div id="content">読み込み中...</div>
+  </body>
+</html>

@@ -1,0 +1,143 @@
+/* ========== Base ========== */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #fbf7ed;
+  color: #593916;
+  font-family: "Zen Maru Gothic", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ========== Auth Container ========== */
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+  min-height: 100vh;
+  /* モバイルで画面いっぱいに */
+  padding: 40px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 0;
+}
+
+/* ========== Title ========== */
+h1 {
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ========== Form ========== */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #e3b861;
+  box-shadow: 0 0 0 2px rgba(30, 144, 255, 0.2);
+}
+
+/* ========== Button ========== */
+button {
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #e3b861;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background-color: #cba276;
+}
+
+/* ========== Switch link ========== */
+.switch {
+  font-size: 14px;
+  margin-top: 24px;
+  text-align: center;
+}
+
+button {
+  text-align: center;
+}
+
+.switch a {
+  color: #e3b861;
+  text-decoration: none;
+}
+
+.switch a:hover {
+  text-decoration: underline;
+}
+
+/* ========== Responsive (Tablet / Desktop) ========== */
+@media (min-width: 768px) {
+  .auth-container {
+    width: 90%;
+    padding: 48px 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+}
+
+.name {
+  padding-left: 15px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  background-color: #e3b861;
+  border: 2px solid #e3b861;
+  border-radius: 15px 15px 0 0;
+  font-weight: 500;
+  color: #fffffe;
+}
+
+.login__email,
+.login__password {
+  padding-left: 15px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 0 0 15px 15px;
+  background-color: #fffffe;
+  border: 2px solid #e3b861;
+}
+
+#name,
+#furigana,
+#postalCode,
+#prefecture,
+#city,
+#address,
+#building,
+#email,
+#password,
+#adminCode {
+  background-color: #fffffe;
+  padding-left: 15px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border: 2px solid #e3b861;
+  border-radius: 10px;
+  color: #e3b861;
+  font-weight: 500;
+}

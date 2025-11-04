@@ -1,0 +1,51 @@
+body {
+  background-color: #FBF7ED;
+  color: #593916;
+  font-family: "Zen Maru Gothic", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: bottom;
+}
+
+.settingsTop {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: #FFEDCA;
+  margin-bottom: 2.5em;
+  padding: 1.875em;
+}
+.settingsTop__btn {
+  width: 1.875em;
+  position: relative;
+}
+.settingsTop__heading {
+  font-size: 1.5rem;
+  font-weight: 500;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  text-align: center;
+}
+
+.settingsList {
+  width: 80%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.settingsList__item {
+  padding: 1em 0.375em;
+  border-bottom: 2px dashed #E3B861;
+}
+.settingsList__item a {
+  font-size: 1.125rem;
+}
+/*# sourceMappingURL=settings.css.map */

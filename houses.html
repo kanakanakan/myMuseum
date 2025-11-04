@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>わたしの空き家 - 一覧</title>
+    <!-- GoogleFonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Decol&family=Kaisei+Opti&family=Lora:ital,wght@0,400..700;1,400..700&family=Moirai+One&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- reset -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <link rel="stylesheet" href="./css/houses.css" />
+    <style>
+      .no-result {
+        color: gray;
+        font-style: italic;
+      }
+    </style>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyA8WauCKutQwzK2kkBPprzwWoy7p9cAXVE",
+        authDomain: "akiya-app-e7a9b.firebaseapp.com",
+        projectId: "akiya-app-e7a9b",
+        storageBucket: "akiya-app-e7a9b.firebasestorage.app",
+        messagingSenderId: "665091929996",
+        appId: "1:665091929996:web:720cedd79b1ba1e4c748a9",
+        measurementId: "G-JV28SYR2NL",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      // ------------------------
+      // localStorage ヘルパー（likedHouses）
+      // ------------------------
+      function getLikedHouses() {
+        return JSON.parse(localStorage.getItem("likedHouses")) || [];
+      }
+      function setLikedHouses(list) {
+        localStorage.setItem("likedHouses", JSON.stringify(list));
+      }
+
+      /**
+       * houseId のお気に入りトグル（追加/削除）。
+       * 追加したら true、削除したら false を返す（現在の状態）。
+       */
+      function toggleFavoriteHouse(houseId) {
+        let liked = getLikedHouses();
+        if (liked.includes(houseId)) {
+          // 解除
+          liked = liked.filter((id) => id !== houseId);
+          setLikedHouses(liked);
+          return false;
+        } else {
+          // 追加
+          liked.push(houseId);
+          setLikedHouses(liked);
+          return true;
+        }
+      }
+
+      // ------------------------
+      // houses + rooms 取得
+      // ------------------------
+      async function fetchHousesWithRooms() {
+        const housesSnap = await getDocs(collection(db, "houses"));
+        const houses = await Promise.all(
+          housesSnap.docs.map(async (hDoc) => {
+            const house = { id: hDoc.id, ...hDoc.data() };
+            const roomsSnap = await getDocs(
+              collection(db, "houses", hDoc.id, "rooms")
+            );
+            house.rooms = roomsSnap.docs.map((r) => ({
+              id: r.id,
+              ...r.data(),
+            }));
+            return house;
+          })
+        );
+        return houses;
+      }
+
+      // ------------------------
+      // 一覧描画（レンダリング）
+      // ------------------------
+      function renderHouses(houses) {
+        const list = document.getElementById("house-list");
+        list.innerHTML = "";
+
+        if (!houses.length) {
+          list.innerHTML =
+            "<p class='no-result'>該当する空き家はありません。</p>";
+          return;
+        }
+
+        const likedHouses = getLikedHouses();
+
+        houses.forEach((h) => {
+          const link = document.createElement("a");
+          link.href = `house.html?houseId=${h.id}`;
+          link.className = "house-link";
+
+          const div = document.createElement("div");
+          div.className = "house";
+
+          const addrText = h.address
+            ? [h.address.prefecture, h.address.city, h.address.detail]
+                .filter(Boolean)
+                .join("")
+            : "不明";
+
+          // 元の一覧と同じ構造で中身を作る
+          div.innerHTML = `
+            <div class="house-header">
+              <img src="${h.photoUrl || "./image/item/noimage.png"}" alt="${
+            h.title || ""
+          }" class="house-photo">
+              <h2 class="house-title">${h.title || "名称未設定の空き家"}</h2>
+            </div>
+            <p class="house__place"><strong>住所</strong> ${addrText}</p>
+            <ul>
+              ${h.rooms
+                .map(
+                  (r) => `
+                    <li class="room">
+                <h4 class="house__room">${r.name || "部屋名なし"}</h4>
+                <img src="${r.photoUrl || "./image/item/noimage.png"}" alt="${
+                    r.name
+                  }" class="room-photo">
+                <div class="room__right">
+                  <p class="room__price">
+                    <strong>料金</strong> ${
+                      r.priceYen ? r.priceYen + "円" : "未設定"
+                    }
+                  </p>
+                  <p class="room__area"><strong>面積</strong> ${
+                    r.area ? r.area + "㎡" : "未設定"
+                  }</p>
+                  <p class="room__floor"><strong>階数</strong>${
+                    r.floor || "-"
+                  }階</p>
+                </div>
+              </li>
+            `
+                )
+                .join("")}
+            </ul>
+          `;
+
+          // ハート画像パス（プロジェクトのパスに合わせて変更してください）
+          const redPath = "./image/item/heart.svg";
+          const grayPath = "./image/item/heart-gray.svg";
+
+          // お気に入りアイコン（初期表示は localStorage に基づく）
+          const favIcon = document.createElement("img");
+          favIcon.className = "favorite-icon";
+          favIcon.alt = "お気に入り";
+          favIcon.style.width = "24px";
+          favIcon.style.height = "24px";
+          favIcon.src = likedHouses.includes(h.id) ? redPath : grayPath;
+
+          // クリックで toggle -> src 切り替え（かつリンク遷移を止める）
+          favIcon.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // aタグへの伝播を止める（誤遷移防止）
+            const nowLiked = toggleFavoriteHouse(h.id);
+            favIcon.src = nowLiked ? redPath : grayPath;
+
+            // ※オプション：解除時に一覧上からそのカードを消したい場合は以下を有効にする
+            // if (!nowLiked) {
+            //   link.remove(); // カードを即座に削除
+            // }
+          });
+
+          // アイコンを要素に追加
+          div.appendChild(favIcon);
+
+          link.appendChild(div);
+          list.appendChild(link);
+        });
+      }
+
+      // ------------------------
+      // キーワード検索
+      // ------------------------
+      function searchHouses(houses, keyword) {
+        keyword = keyword.trim().toLowerCase();
+        if (!keyword) return houses;
+
+        return houses.filter((h) => {
+          const addrText = h.address
+            ? [h.address.prefecture, h.address.city, h.address.detail]
+                .filter(Boolean)
+                .join(" ")
+            : "";
+
+          const houseMatch =
+            (h.title || "").toLowerCase().includes(keyword) ||
+            addrText.toLowerCase().includes(keyword);
+
+          const roomMatch = h.rooms.some(
+            (r) =>
+              (r.name || "").toLowerCase().includes(keyword) ||
+              (r.description || "").toLowerCase().includes(keyword) ||
+              String(r.category || "")
+                .toLowerCase()
+                .includes(keyword)
+          );
+
+          return houseMatch || roomMatch;
+        });
+      }
+
+      // ------------------------
+      // 並び替え
+      // ------------------------
+      function sortHouses(houses, condition) {
+        const sorted = [...houses];
+        switch (condition) {
+          case "titleAsc":
+            sorted.sort((a, b) =>
+              (a.title || "").localeCompare(b.title || "", "ja")
+            );
+            break;
+          case "oldest":
+            sorted.sort(
+              (a, b) =>
+                (a.createdAt?.toMillis?.() || 0) -
+                (b.createdAt?.toMillis?.() || 0)
+            );
+            break;
+          case "newest":
+          default:
+            sorted.sort(
+              (a, b) =>
+                (b.createdAt?.toMillis?.() || 0) -
+                (a.createdAt?.toMillis?.() || 0)
+            );
+            break;
+        }
+        return sorted;
+      }
+
+      // ------------------------
+      // 更新ロジック（検索 + 並び替え）
+      // ------------------------
+      let allHouses = [];
+      let currentKeyword = "";
+      let currentSort = "newest"; // デフォルト「新しい順」
+
+      function updateList() {
+        let filtered = searchHouses(allHouses, currentKeyword);
+
+        if (currentPref) {
+          filtered = filtered.filter(
+            (h) => h.address?.prefecture === currentPref
+          );
+        }
+        if (currentCity) {
+          filtered = filtered.filter((h) => h.address?.city === currentCity);
+        }
+
+        let sorted = sortHouses(filtered, currentSort);
+        renderHouses(sorted);
+      }
+
+      window.updateList = updateList;
+
+      // ------------------------
+      // 初期処理
+      // ------------------------
+      window.addEventListener("DOMContentLoaded", async () => {
+        allHouses = await fetchHousesWithRooms();
+        updateList();
+
+        const searchInput = document.getElementById("search-input");
+        const searchBtn = document.getElementById("search-btn");
+        const sortSelect = document.getElementById("sort-select");
+
+        // 検索
+        searchBtn.addEventListener("click", () => {
+          currentKeyword = searchInput.value;
+          updateList();
+        });
+        searchInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            currentKeyword = searchInput.value;
+            updateList();
+          }
+        });
+
+        // 並び替え
+        sortSelect.addEventListener("change", (e) => {
+          currentSort = e.target.value;
+          updateList();
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="house__top">
+      <a href="./index.html" class="house__btn"
+        ><img src="./image/item/btn_back.png" alt="前のページに戻る"
+      /></a>
+      <h1 class="house__heading">空き家一覧</h1>
+    </div>
+    <div class="inner">
+      <div class="search">
+        <input type="text" id="search-input" placeholder="キーワード検索" />
+        <button id="search-btn">検索</button>
+        <select id="sort-select">
+          <option value="newest" selected>新しい順</option>
+          <option value="oldest">古い順</option>
+          <option value="titleAsc">あいうえお順</option>
+        </select>
+      </div>
+      <!-- 所在地検索 -->
+      <div class="area-search">
+        <div class="pref">
+          <label for="pref-select">都道府県:</label>
+          <select id="pref-select">
+            <option value="">選択してください</option>
+            <option value="東京都">東京都</option>
+            <option value="大阪府">大阪府</option>
+            <option value="愛知県">愛知県</option>
+            <option value="北海道">北海道</option>
+            <option value="福岡県">福岡県</option>
+          </select>
+        </div>
+        <div class="city">
+          <label for="city-select">市:</label>
+          <select id="city-select" disabled>
+            <option value="">先に都道府県を選択してください</option>
+          </select>
+        </div>
+      </div>
+      <div id="house-list">読み込み中...</div>
+    </div>
+    <script src="./js/areas.js"></script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- GoogleFonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Decol&family=Kaisei+Opti&family=Lora:ital,wght@0,400..700;1,400..700&family=Moirai+One&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/the-new-css-reset/css/reset.min.css"
+    />
+    <title>予約内容確認 - わたしの博物館</title>
+    <link rel="stylesheet" href="./css/reservationConfirm.css" />
+  </head>
+  <body>
+    <div class="confirmation-container">
+      <div class="confirmation__top">
+        <a href="./reservation.html" class="confirmation__btn"
+          ><img src="./image/item/btn_back.png" alt="前のページに戻る"
+        /></a>
+        <h1 class="confirmation__heading">予約内容確認</h1>
+      </div>
+
+      <div class="confirmation__inner">
+        <!-- Show all reservation details here -->
+        <div id="confirmationDetails"></div>
+        <!-- Final confirm button -->
+        <button id="finalConfirmBtn">登録</button>
+      </div>
+    </div>
+
+    <script type="module" src="js/reservationConfirm.js"></script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Akiya App</title>
+    <link rel="stylesheet" href="css/auth.css" />
+  </head>
+  <body>
+    <div class="Login">
+      <div class="auth-container">
+        <h1 class="login__title">ログイン</h1>
+        <form id="loginForm" class="login-form">
+          <input
+            type="email"
+            id="email"
+            placeholder="Email"
+            required
+            class="login__email"
+          /><br />
+          <input
+            type="password"
+            id="login__password"
+            placeholder="Password"
+            required
+            class="login__password"
+          /><br />
+          <button type="submit">Login</button>
+
+          <p class="switch">
+            アカウントをお持ちでないですか？
+            <a href="signup.html" class="signup__Btn">Sign up</a>
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <script type="module" src="js/auth.js"></script>
+  </body>
+</html>
