@@ -63,6 +63,8 @@
 
           const museum = museumSnap.data();
 
+          addToMuseumHistory(museumId);
+
           // 戻るリンクのURL決定（デバッグログ追加）
           const backUrl =
             from === "tickets" ? "./tickets.html" : "./museums.html";
